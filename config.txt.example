@@ -1,0 +1,29 @@
+{
+  "wifi": {
+    "sta_ssid": "Your_Home_Network",
+    "sta_password": "Your_Password",
+    "admin_user": "admin",
+    "admin_pass": "1234"
+  },
+  "ntp": {
+    "server": "pool.ntp.org",
+    "timezone_offset": 0,
+    "daylight_savings": false
+  },
+  "detection": {
+    "protected_ssids": ["Home_WiFi", "Office_Secure"],
+    "silence_gap_seconds": 30,
+    "led_hold_seconds": 300,
+    "reporting_interval_seconds": 10
+  },
+  "api": {
+    "endpoint_url": "https://your-api.com/v1/alerts",
+    "custom_header_name": "X-API-KEY",
+    "custom_header_value": "secret-token-123"
+  },
+  "hardware": {
+    "buzzer_freq": 2000,
+    "buzzer_duration_ms": 2000,
+    "screen_brightness": 128
+  }
+}
