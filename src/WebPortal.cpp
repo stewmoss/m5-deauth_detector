@@ -1,4 +1,5 @@
 #include "WebPortal.h"
+#include "Logger.h"
 
 WebPortal::WebPortal(ConfigManager* configMgr) 
     : configManager(configMgr), server(80), active(false), lastActivity(0) {}
@@ -7,13 +8,15 @@ void WebPortal::begin(bool apMode) {
     server.on("/", [this]() { this->handleRoot(); });
     server.on("/save", HTTP_POST, [this]() { this->handleSave(); });
     server.on("/status", [this]() { this->handleStatus(); });
+    server.on("/debug/log", [this]() { this->handleDebugLog(); });
+    server.on("/debug/clear", HTTP_POST, [this]() { this->handleDebugClear(); });
     server.onNotFound([this]() { this->handleNotFound(); });
     
     server.begin();
     active = true;
     lastActivity = millis();
     
-    Serial.println("Web portal started");
+    logger.debugPrintln("Web portal started");
 }
 
 void WebPortal::handle() {
@@ -25,7 +28,7 @@ void WebPortal::handle() {
 void WebPortal::stop() {
     server.stop();
     active = false;
-    Serial.println("Web portal stopped");
+    logger.debugPrintln("Web portal stopped");
 }
 
 void WebPortal::resetIdleTimer() {
@@ -138,6 +141,9 @@ void WebPortal::handleSave() {
         config.hardware.screen_brightness = server.arg("screen_brightness").toInt();
     }
     
+    // Debug config - checkbox only sends value if checked
+    config.debug.enabled = server.hasArg("debug_enabled");
+    
     // Save to SD card
     if (configManager->saveConfig()) {
         server.send(200, "text/html", 
@@ -173,6 +179,45 @@ void WebPortal::handleNotFound() {
     // Captive portal redirect
     server.sendHeader("Location", "/", true);
     server.send(302, "text/plain", "");
+}
+
+void WebPortal::handleDebugLog() {
+    if (!authenticate()) return;
+    
+    resetIdleTimer();
+    
+    String debugFile = logger.getDebugLogFile();
+    
+    if (!SD.exists(debugFile.c_str())) {
+        server.send(404, "text/plain", "Debug log file not found");
+        return;
+    }
+    
+    File file = SD.open(debugFile.c_str(), FILE_READ);
+    if (!file) {
+        server.send(500, "text/plain", "Failed to open debug log file");
+        return;
+    }
+    
+    // Stream the file content
+    server.streamFile(file, "text/plain");
+    file.close();
+}
+
+void WebPortal::handleDebugClear() {
+    if (!authenticate()) return;
+    
+    resetIdleTimer();
+    
+    if (logger.clearDebugLog()) {
+        server.sendHeader("Location", "/", true);
+        server.send(302, "text/plain", "");
+    } else {
+        server.send(500, "text/html", 
+            "<html><body><h2>Error</h2>"
+            "<p>Failed to clear debug log</p>"
+            "<a href='/'>Back</a></body></html>");
+    }
 }
 
 String WebPortal::generateHTML() {
@@ -229,6 +274,7 @@ String WebPortal::generateHTML() {
             <div class='tab' onclick='showTab("detection")'>Detection</div>
             <div class='tab' onclick='showTab("api")'>API</div>
             <div class='tab' onclick='showTab("hardware")'>Hardware</div>
+            <div class='tab' onclick='showTab("debug")'>Debug</div>
         </div>
         
         <form method='POST' action='/save'>
@@ -311,6 +357,24 @@ String WebPortal::generateHTML() {
                 
                 <label>Screen Brightness (0-255):</label>
                 <input type='number' name='screen_brightness' value=')" + String(config.hardware.screen_brightness) + R"(' min='0' max='255'>
+            </div>
+            
+            <div id='debug' class='tab-content'>
+                <div class='info'>Configure debug logging to SD card</div>
+                
+                <label>
+                    <input type='checkbox' name='debug_enabled' value='true' )" + 
+                    String(config.debug.enabled ? "checked" : "") + R"(>
+                    Enable Debug Logging
+                </label>
+                
+                <p style='margin-top: 20px;'>
+                    <a href='/debug/log' target='_blank' style='color: #007bff;'>View Debug Log</a>
+                </p>
+                
+                <form method='POST' action='/debug/clear' style='display: inline;'>
+                    <button type='submit' style='background: #dc3545; margin-top: 10px;'>Clear Debug Log</button>
+                </form>
             </div>
             
             <button type='submit'>Save Configuration</button>

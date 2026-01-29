@@ -1,16 +1,17 @@
 #include "WiFiManager.h"
+#include "Logger.h"
 #include <time.h>
 
 WiFiManager::WiFiManager(WiFiConfig& config) : wifiConfig(config) {}
 
 bool WiFiManager::connectSTA() {
     if (wifiConfig.sta_ssid.isEmpty()) {
-        Serial.println("WiFi SSID not configured");
+        logger.debugPrintln("WiFi SSID not configured");
         return false;
     }
     
-    Serial.print("Connecting to WiFi: ");
-    Serial.println(wifiConfig.sta_ssid);
+    logger.debugPrint("Connecting to WiFi: ");
+    logger.debugPrintln(wifiConfig.sta_ssid);
     
     WiFi.mode(WIFI_STA);
     WiFi.begin(wifiConfig.sta_ssid.c_str(), wifiConfig.sta_password.c_str());
@@ -18,17 +19,17 @@ bool WiFiManager::connectSTA() {
     int timeout = 20; // 20 seconds
     while (WiFi.status() != WL_CONNECTED && timeout > 0) {
         delay(1000);
-        Serial.print(".");
+        logger.debugPrint(".");
         timeout--;
     }
-    Serial.println();
+    logger.debugPrintln();
     
     if (WiFi.status() == WL_CONNECTED) {
-        Serial.print("Connected! IP: ");
-        Serial.println(WiFi.localIP());
+        logger.debugPrint("Connected! IP: ");
+        logger.debugPrintln(WiFi.localIP().toString());
         return true;
     } else {
-        Serial.println("Connection failed");
+        logger.debugPrintln("Connection failed");
         return false;
     }
 }
@@ -49,13 +50,13 @@ bool WiFiManager::startAP(const char* ssid, const char* password) {
     }
     
     if (success) {
-        Serial.print("AP started: ");
-        Serial.println(ssid);
-        Serial.print("IP address: ");
-        Serial.println(WiFi.softAPIP());
+        logger.debugPrint("AP started: ");
+        logger.debugPrintln(ssid);
+        logger.debugPrint("IP address: ");
+        logger.debugPrintln(WiFi.softAPIP().toString());
         return true;
     } else {
-        Serial.println("Failed to start AP");
+        logger.debugPrintln("Failed to start AP");
         return false;
     }
 }
@@ -69,8 +70,8 @@ bool WiFiManager::isConnected() {
 }
 
 bool WiFiManager::syncNTP(NTPConfig& ntpConfig) {
-    Serial.print("Syncing time with NTP server: ");
-    Serial.println(ntpConfig.server);
+    logger.debugPrint("Syncing time with NTP server: ");
+    logger.debugPrintln(ntpConfig.server);
     
     configTime(ntpConfig.timezone_offset * 3600, 
                ntpConfig.daylight_savings ? 3600 : 0, 
@@ -80,18 +81,18 @@ bool WiFiManager::syncNTP(NTPConfig& ntpConfig) {
     int retry = 0;
     const int retry_count = 10;
     while (time(nullptr) < 100000 && ++retry < retry_count) {
-        Serial.print(".");
+        logger.debugPrint(".");
         delay(1000);
     }
-    Serial.println();
+    logger.debugPrintln();
     
     if (retry < retry_count) {
         time_t now = time(nullptr);
-        Serial.print("Time synchronized: ");
-        Serial.println(ctime(&now));
+        logger.debugPrint("Time synchronized: ");
+        logger.debugPrintln(ctime(&now));
         return true;
     } else {
-        Serial.println("Failed to sync time");
+        logger.debugPrintln("Failed to sync time");
         return false;
     }
 }

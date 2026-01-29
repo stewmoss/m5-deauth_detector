@@ -102,6 +102,13 @@ The `config.txt` file uses JSON format with the following sections:
 }
 ```
 
+#### Debug Settings
+```json
+"debug": {
+  "enabled": false
+}
+```
+
 ## Usage
 
 ### Monitor Mode (Normal Operation)
@@ -121,6 +128,25 @@ Press **ENTER** to cycle through views:
 1. **Dashboard**: Shows all protected SSIDs with attack counters
 2. **Live Log**: Displays the 5 most recent events
 3. **Detailed**: One SSID per page with full statistics
+
+### Debug Logging
+
+Debug logging captures all system messages to a file on the SD card for troubleshooting.
+
+#### Enabling Debug Logging
+
+1. **Via Web Interface**: Navigate to the "Debug" tab and check "Enable Debug Logging"
+2. **Via Config File**: Set `"debug": { "enabled": true }` in config.txt
+
+#### Viewing Debug Logs
+
+- **Web Interface**: Click "View Debug Log" in the Debug tab to view logs in browser
+- **SD Card**: Read `/deauthdetector/logs/debug.log` directly from the SD card
+
+#### Clearing Debug Logs
+
+- **Web Interface**: Click "Clear Debug Log" button in the Debug tab
+- **Automatic**: Log is automatically cleared on each device reboot
 
 ### Entering Config Mode
 
@@ -146,10 +172,19 @@ Events are sent as JSON array via POST:
 
 ### Log Files
 
-Logs are stored in `/logs/` directory on SD card:
+Logs are stored in `/deauthdetector/logs/` directory on SD card:
+
+#### Session Logs
 - Format: CSV
-- Filename: `session_YYYYMMDD_HHMMSS.csv`
+- Filename: `deauthdetect_session_YYYYMMDD_HHMMSS.csv`
 - New session file created on each boot
+- Contains: timestamp, target_ssid, target_bssid, attacker_mac, channel, rssi, packet_count
+
+#### Debug Log
+- Filename: `debug.log`
+- Cleared on each boot
+- Only written when debug logging is enabled
+- Contains all system messages (WiFi status, config loading, alerts, etc.)
 
 ## Troubleshooting
 

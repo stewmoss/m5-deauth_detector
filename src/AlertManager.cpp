@@ -1,4 +1,5 @@
 #include "AlertManager.h"
+#include "Logger.h"
 #include <M5Cardputer.h>
 #include <FastLED.h>
 
@@ -42,7 +43,7 @@ void AlertManager::triggerAlert() {
     ledCountdownActive = true;
     ledTimer = millis();
     
-    Serial.println("Alert triggered!");
+    logger.debugPrintln("Alert triggered!");
 }
 
 void AlertManager::update() {
@@ -65,7 +66,7 @@ void AlertManager::update() {
                 setLED(0x000000);
                 ledCountdownActive = false;
                 alertActive = false;
-                Serial.println("Alert cleared after silence period");
+                logger.debugPrintln("Alert cleared after silence period");
             }
         } else {
             // Reset countdown if packets are still coming
@@ -92,26 +93,28 @@ void AlertManager::setLED(uint32_t color) {
     leds[0] = CRGB(r, g, b);
     FastLED.show(LED_BRIGHTNESS);
     
-    Serial.printf("LED color set to: 0x%06X (R:%d G:%d B:%d)\n", color, r, g, b);
+    char buf[64];
+    snprintf(buf, sizeof(buf), "LED color set to: 0x%06X (R:%d G:%d B:%d)", color, r, g, b);
+    logger.debugPrintln(buf);
 }
 
 // LED status indicators for system states
 void AlertManager::setStatusConnecting() {
     setLED(0xFFFF00); // Yellow
-    Serial.println("LED Status: Connecting to WiFi");
+    logger.debugPrintln("LED Status: Connecting to WiFi");
 }
 
 void AlertManager::setStatusSyncing() {
     setLED(0x0000FF); // Blue
-    Serial.println("LED Status: Syncing time");
+    logger.debugPrintln("LED Status: Syncing time");
 }
 
 void AlertManager::setStatusScanning() {
     setLED(0xFFFF00); // Yellow
-    Serial.println("LED Status: Scanning WiFi channels");
+    logger.debugPrintln("LED Status: Scanning WiFi channels");
 }
 
 void AlertManager::setStatusReady() {
     setLED(0x000000); // Off
-    Serial.println("LED Status: System ready");
+    logger.debugPrintln("LED Status: System ready");
 }

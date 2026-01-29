@@ -1,4 +1,5 @@
 #include "ConfigManager.h"
+#include "Logger.h"
 
 ConfigManager::ConfigManager() : configValid(false) {
     setDefaults();
@@ -25,17 +26,19 @@ void ConfigManager::setDefaults() {
     config.hardware.buzzer_freq = 2000;
     config.hardware.buzzer_duration_ms = 2000;
     config.hardware.screen_brightness = 128;
+    
+    config.debug.enabled = false;
 }
 
 bool ConfigManager::loadConfig(const char* filename) {
     if (!SD.exists(filename)) {
-        Serial.println("Config file not found");
+        logger.debugPrintln("Config file not found");
         return false;
     }
     
     File file = SD.open(filename, FILE_READ);
     if (!file) {
-        Serial.println("Failed to open config file");
+        logger.debugPrintln("Failed to open config file");
         return false;
     }
     
@@ -44,8 +47,8 @@ bool ConfigManager::loadConfig(const char* filename) {
     file.close();
     
     if (error) {
-        Serial.print("Failed to parse config: ");
-        Serial.println(error.c_str());
+        logger.debugPrint("Failed to parse config: ");
+        logger.debugPrintln(error.c_str());
         return false;
     }
     
@@ -99,10 +102,16 @@ bool ConfigManager::loadConfig(const char* filename) {
         config.hardware.screen_brightness = hardware["screen_brightness"] | 128;
     }
     
+    // Parse Debug config
+    if (doc.containsKey("debug")) {
+        JsonObject debug = doc["debug"];
+        config.debug.enabled = debug["enabled"] | false;
+    }
+    
     configValid = !config.wifi.sta_ssid.isEmpty() && 
                   !config.detection.protected_ssids.empty();
     
-    Serial.println("Config loaded successfully");
+    logger.debugPrintln("Config loaded successfully");
     return configValid;
 }
 
@@ -144,19 +153,23 @@ bool ConfigManager::saveConfig(const char* filename) {
     hardware["buzzer_duration_ms"] = config.hardware.buzzer_duration_ms;
     hardware["screen_brightness"] = config.hardware.screen_brightness;
     
+    // Debug config
+    JsonObject debug = doc.createNestedObject("debug");
+    debug["enabled"] = config.debug.enabled;
+    
     File file = SD.open(filename, FILE_WRITE);
     if (!file) {
-        Serial.println("Failed to create config file");
+        logger.debugPrintln("Failed to create config file");
         return false;
     }
     
     if (serializeJsonPretty(doc, file) == 0) {
-        Serial.println("Failed to write config");
+        logger.debugPrintln("Failed to write config");
         file.close();
         return false;
     }
     
     file.close();
-    Serial.println("Config saved successfully");
+    logger.debugPrintln("Config saved successfully");
     return true;
 }

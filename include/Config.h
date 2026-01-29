@@ -36,12 +36,17 @@ struct HardwareConfig {
     int screen_brightness;
 };
 
+struct DebugConfig {
+    bool enabled;
+};
+
 struct AppConfig {
     WiFiConfig wifi;
     NTPConfig ntp;
     DetectionConfig detection;
     APIConfig api;
     HardwareConfig hardware;
+    DebugConfig debug;
 };
 
 #endif

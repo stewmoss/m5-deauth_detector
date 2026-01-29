@@ -68,6 +68,15 @@ void setup() {
         while (1) delay(1000);
     }
     Serial.println("SD Card initialized");
+
+    // Create /deauthdetector directory if it doesn't exist
+    if (!SD.exists("/deauthdetector")) {
+        if (!SD.mkdir("/deauthdetector")) {
+            Serial.println("Failed to create /deauthdetector directory");
+            M5Cardputer.Display.println("Cant create /deauthdetector");
+            while (1) delay(1000);
+        }
+    }
     
     // Load configuration
     if (!configManager.loadConfig()) {
@@ -78,6 +87,13 @@ void setup() {
     
     // Get configuration
     AppConfig& config = configManager.getConfig();
+    
+    // Set config for logger (enables debug file logging if configured)
+    logger.setConfig(&config);
+    // Initialize logger
+    if (!logger.begin()) {
+        logger.debugPrintln("Warning: Logger initialization failed");
+    }
     
     // Initialize managers
     alertManager = new AlertManager(config.hardware);
@@ -106,19 +122,17 @@ void setup() {
         wifiManager->disconnect();
         M5Cardputer.Display.println("Disconnected");
     } else {
-        Serial.println("Warning: Could not connect to WiFi for time sync");
+        logger.debugPrintln("Warning: Could not connect to WiFi for time sync");
         alertManager->setStatusReady();
     }
-    
+
+    // Initialize detector with LED scanning indicator
+    alertManager->setStatusScanning();    
     delay(1000);
     
-    // Initialize logger
-    if (!logger.begin()) {
-        Serial.println("Warning: Logger initialization failed");
-    }
+  
     
-    // Initialize detector with LED scanning indicator
-    alertManager->setStatusScanning();
+
     detector.begin(config.detection.protected_ssids);
     alertManager->setStatusReady();
     
@@ -144,7 +158,7 @@ void loop() {
 }
 
 void enterConfigMode() {
-    Serial.println("Entering Config Mode");
+    logger.debugPrintln("Entering Config Mode");
     currentState = STATE_CONFIG_MODE;
     
     // Stop monitoring if active
@@ -162,7 +176,7 @@ void enterConfigMode() {
 }
 
 void enterMonitorMode() {
-    Serial.println("Entering Monitor Mode");
+    logger.debugPrintln("Entering Monitor Mode");
     currentState = STATE_MONITOR_MODE;
     
     // Stop web portal if active
@@ -193,7 +207,7 @@ void enterMonitorMode() {
             Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
             if (status.enter) {
                 enterPressed = true;
-                Serial.println("Enter pressed - skipping monitoring display");
+                logger.debugPrintln("Enter pressed - skipping monitoring display");
             }
         }
         
@@ -211,7 +225,7 @@ void handleConfigMode() {
         
         // Check for timeout
         if (webPortal->hasTimedOut()) {
-            Serial.println("Config mode timeout - returning to monitor mode");
+            logger.debugPrintln("Config mode timeout - returning to monitor mode");
             enterMonitorMode();
         }
     }

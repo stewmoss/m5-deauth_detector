@@ -1,4 +1,5 @@
 #include "DeauthDetector.h"
+#include "Logger.h"
 #include "esp_wifi.h"
 #include "esp_wifi_types.h"
 #include <WiFi.h>
@@ -35,7 +36,7 @@ void DeauthDetector::begin(const std::vector<String>& protected_ssids) {
 }
 
 void DeauthDetector::discoverChannels() {
-    Serial.println("Discovering channels for protected SSIDs...");
+    logger.debugPrintln("Discovering channels for protected SSIDs...");
     activeChannels.clear();
     ssidChannelMap.clear();
     
@@ -65,31 +66,32 @@ void DeauthDetector::discoverChannels() {
                     if (!found) {
                         activeChannels.push_back(channel);
                     }
-                    Serial.printf("Found '%s' on channel %d\n", ssid.c_str(), channel);
+                    char buf[64];
+                    snprintf(buf, sizeof(buf), "Found '%s' on channel %d", ssid.c_str(), channel);
+                    logger.debugPrintln(buf);
                 }
             }
         }
     }
     
     if (activeChannels.empty()) {
-        Serial.println("Warning: No protected SSIDs found. Monitoring all channels.");
+        logger.debugPrintln("Warning: No protected SSIDs found. Monitoring all channels.");
         for (int i = 1; i <= 14; i++) {
             activeChannels.push_back(i);
         }
     }
     
-    Serial.print("Active channels: ");
+    String channelList = "Active channels: ";
     for (int ch : activeChannels) {
-        Serial.print(ch);
-        Serial.print(" ");
+        channelList += String(ch) + " ";
     }
-    Serial.println();
+    logger.debugPrintln(channelList);
 }
 
 void DeauthDetector::startMonitoring() {
     if (monitoring) return;
     
-    Serial.println("Starting packet monitoring...");
+    logger.debugPrintln("Starting packet monitoring...");
     
     WiFi.disconnect();
     delay(100);
@@ -105,7 +107,7 @@ void DeauthDetector::startMonitoring() {
 void DeauthDetector::stopMonitoring() {
     if (!monitoring) return;
     
-    Serial.println("Stopping packet monitoring...");
+    logger.debugPrintln("Stopping packet monitoring...");
     
     esp_wifi_set_promiscuous(false);
     monitoring = false;
@@ -158,8 +160,10 @@ void DeauthDetector::packetHandler(void* buf, wifi_promiscuous_pkt_type_t type) 
         
         detectorInstance->events.push_back(event);
         
-        Serial.printf("Deauth detected: BSSID=%s, Sender=%s, Ch=%d, RSSI=%d\n",
-                     bssid, sender, event.channel, event.rssi);
+        char logBuf[128];
+        snprintf(logBuf, sizeof(logBuf), "Deauth detected: BSSID=%s, Sender=%s, Ch=%d, RSSI=%d",
+                 bssid, sender, event.channel, event.rssi);
+        logger.debugPrintln(logBuf);
     }
 }
 

@@ -3,6 +3,7 @@
 
 #include <WiFi.h>
 #include <WebServer.h>
+#include <SD.h>
 #include "Config.h"
 #include "ConfigManager.h"
 
@@ -27,6 +28,8 @@ private:
     void handleSave();
     void handleStatus();
     void handleNotFound();
+    void handleDebugLog();
+    void handleDebugClear();
     bool authenticate();
     String generateHTML();
 };

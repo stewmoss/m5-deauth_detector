@@ -1,15 +1,16 @@
 #include "APIReporter.h"
+#include "Logger.h"
 
 APIReporter::APIReporter(APIConfig& config) : apiConfig(config) {}
 
 bool APIReporter::sendBatch(const std::vector<DeauthEvent>& events) {
     if (events.empty()) {
-        Serial.println("No events to report");
+        logger.debugPrintln("No events to report");
         return true;
     }
     
     if (apiConfig.endpoint_url.isEmpty()) {
-        Serial.println("API endpoint not configured");
+        logger.debugPrintln("API endpoint not configured");
         return false;
     }
     
@@ -24,25 +25,25 @@ bool APIReporter::sendBatch(const std::vector<DeauthEvent>& events) {
     
     String payload = buildPayload(events);
     
-    Serial.print("Sending ");
-    Serial.print(events.size());
-    Serial.println(" events to API...");
-    Serial.println(payload);
+    logger.debugPrint("Sending ");
+    logger.debugPrint(String(events.size()));
+    logger.debugPrintln(" events to API...");
+    logger.debugPrintln(payload);
     
     int httpResponseCode = http.POST(payload);
     
     if (httpResponseCode > 0) {
-        Serial.print("API response code: ");
-        Serial.println(httpResponseCode);
+        logger.debugPrint("API response code: ");
+        logger.debugPrintln(String(httpResponseCode));
         
         String response = http.getString();
-        Serial.println("Response: " + response);
+        logger.debugPrintln("Response: " + response);
         
         http.end();
         return (httpResponseCode >= 200 && httpResponseCode < 300);
     } else {
-        Serial.print("Error sending to API: ");
-        Serial.println(http.errorToString(httpResponseCode));
+        logger.debugPrint("Error sending to API: ");
+        logger.debugPrintln(http.errorToString(httpResponseCode));
         http.end();
         return false;
     }

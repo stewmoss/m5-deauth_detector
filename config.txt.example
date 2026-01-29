@@ -25,5 +25,8 @@
     "buzzer_freq": 2000,
     "buzzer_duration_ms": 2000,
     "screen_brightness": 128
+  },
+  "debug": {
+    "enabled": false
   }
 }
