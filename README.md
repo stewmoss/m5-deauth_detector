@@ -10,6 +10,7 @@ A handheld Wi-Fi security monitor built for the M5Stack Cardputer (StampS3) that
 - **Remote API Reporting**: Sends batch alerts to a configurable REST API endpoint
 - **Web Configuration Portal**: Easy setup via browser interface
 - **Multiple Display Views**: Dashboard, live log, and detailed statistics
+- **Time Synchronization**: Correct device time with ntp.
 
 ## Hardware Requirements
 
