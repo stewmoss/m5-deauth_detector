@@ -21,7 +21,6 @@ WiFiManager* wifiManager = nullptr;
 DeauthDetector detector;
 Display display;
 WebPortal* webPortal = nullptr;
-Logger logger;
 APIReporter* apiReporter = nullptr;
 AlertManager* alertManager = nullptr;
 
