@@ -34,6 +34,7 @@ struct HardwareConfig {
     int buzzer_freq;
     int buzzer_duration_ms;
     int screen_brightness;
+    bool fancy_intro;
 };
 
 struct DebugConfig {

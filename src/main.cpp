@@ -54,8 +54,7 @@ void setup() {
 
     // Initialize display
     display.begin();
-    display.showStartup();
-    delay(2000);
+    display.showStartup();  // Show basic startup first, animated intro after config loads
     SPI.begin(SD_SPI_SCK_PIN, SD_SPI_MISO_PIN, SD_SPI_MOSI_PIN, SD_SPI_CS_PIN);
 
     // Initialize SD card
@@ -86,6 +85,13 @@ void setup() {
     
     // Get configuration
     AppConfig& config = configManager.getConfig();
+    
+    // Show animated intro or simple startup based on config
+    if (config.hardware.fancy_intro) {
+        display.showAnimatedIntro();
+    } else {
+        delay(2000);  // Simple startup already shown, just wait
+    }
     
     // Set config for logger (enables debug file logging if configured)
     logger.setConfig(&config);

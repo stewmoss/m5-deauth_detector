@@ -35,6 +35,207 @@ void Display::showStartup() {
     M5Cardputer.Display.println("By Stewart Moss (c) 2026.");
 }
 
+void Display::showAnimatedIntro() {
+    #define BUZZER_PIN 2
+    #define INTRO_DURATION 4000
+    #define SCREEN_WIDTH 240
+    #define SCREEN_HEIGHT 135
+    
+    // Shield center position
+    const int shieldX = SCREEN_WIDTH / 2;
+    const int shieldY = 58;
+    const int shieldSize = 32;
+    
+    // Progress bar dimensions
+    const int barX = 30;
+    const int barY = 118;
+    const int barWidth = 180;
+    const int barHeight = 10;
+    
+    unsigned long introStart = millis();
+    bool skipped = false;
+    float sweepAngle = 0;
+    int lastSoundPhase = -1;
+    
+    while ((millis() - introStart < INTRO_DURATION) && !skipped) {
+        unsigned long elapsed = millis() - introStart;
+        float progress = (float)elapsed / INTRO_DURATION;
+        
+        // Clear screen
+        clearScreen();
+        
+        // === Draw WiFi Shield Icon ===
+        // Shield body (rounded rectangle base)
+        M5Cardputer.Display.fillRoundRect(shieldX - shieldSize/2, shieldY - shieldSize/2 + 5, 
+                                          shieldSize, shieldSize + 10, 6, BLUE);
+        // Shield point (triangle at bottom)
+        M5Cardputer.Display.fillTriangle(shieldX - shieldSize/2, shieldY + shieldSize/2 + 5,
+                                         shieldX + shieldSize/2, shieldY + shieldSize/2 + 5,
+                                         shieldX, shieldY + shieldSize/2 + 18, BLUE);
+        
+        // WiFi arcs on shield (concentric arcs using circles)
+        for (int i = 3; i >= 1; i--) {
+            int arcRadius = 6 + i * 5;
+            // Draw partial circle (upper arc) - using filled circles with black overlay
+            M5Cardputer.Display.drawCircle(shieldX, shieldY + 10, arcRadius, WHITE);
+        }
+        // Center dot
+        M5Cardputer.Display.fillCircle(shieldX, shieldY + 10, 3, WHITE);
+        
+        // === Radar Sweep Effect ===
+        sweepAngle = (elapsed / 8.0f);  // Rotate over time
+        float radians = sweepAngle * PI / 180.0f;
+        int sweepLength = 45;
+        int endX = shieldX + (int)(cos(radians - PI/2) * sweepLength);
+        int endY = shieldY + (int)(sin(radians - PI/2) * sweepLength);
+        
+        // Draw sweep line with gradient effect (multiple lines)
+        for (int i = 0; i < 8; i++) {
+            float offsetAngle = (sweepAngle - i * 3) * PI / 180.0f;
+            int lineEndX = shieldX + (int)(cos(offsetAngle - PI/2) * sweepLength);
+            int lineEndY = shieldY + (int)(sin(offsetAngle - PI/2) * sweepLength);
+            uint16_t lineColor = (i < 2) ? WHITE : ((i < 4) ? CYAN : BLUE);
+            M5Cardputer.Display.drawLine(shieldX, shieldY, lineEndX, lineEndY, lineColor);
+        }
+        
+        // === Title Text ===
+        M5Cardputer.Display.setTextSize(2);
+        M5Cardputer.Display.setTextColor(WHITE, BLACK);
+        
+        // Animated title - slides in from left during first 500ms
+        int titleX = (elapsed < 500) ? map(elapsed, 0, 500, -100, 35) : 35;
+        M5Cardputer.Display.setCursor(titleX, 8);
+        M5Cardputer.Display.print("DEAUTH");
+        
+        // Second word slides in from right
+        int titleX2 = (elapsed < 700) ? map(elapsed, 200, 700, 240, 100) : 100;
+        if (elapsed > 200) {
+            M5Cardputer.Display.setCursor(titleX2, 8);
+            M5Cardputer.Display.print("DETECTOR");
+        }
+        
+        // === Progress Bar ===
+        // Bar background
+        M5Cardputer.Display.drawRoundRect(barX, barY, barWidth, barHeight, 3, WHITE);
+        // Bar fill
+        int fillWidth = (int)(progress * (barWidth - 4));
+        if (fillWidth > 0) {
+            // Gradient effect - blue to cyan
+            uint16_t barColor = (progress < 0.5) ? BLUE : CYAN;
+            M5Cardputer.Display.fillRoundRect(barX + 2, barY + 2, fillWidth, barHeight - 4, 2, barColor);
+        }
+        
+        // === Status Text ===
+        M5Cardputer.Display.setTextSize(1);
+        M5Cardputer.Display.setTextColor(CYAN, BLACK);
+        M5Cardputer.Display.setCursor(barX, barY - 12);
+        
+        // Animated loading text
+        if (elapsed < 1000) {
+            M5Cardputer.Display.print("Initializing");
+        } else if (elapsed < 2000) {
+            M5Cardputer.Display.print("Loading config");
+        } else if (elapsed < 3000) {
+            M5Cardputer.Display.print("Starting scanner");
+        } else {
+            M5Cardputer.Display.print("Ready!");
+        }
+        
+        // Loading dots animation
+        int dots = (elapsed / 300) % 4;
+        for (int i = 0; i < dots; i++) {
+            M5Cardputer.Display.print(".");
+        }
+        
+        // === Skip Text ===
+        M5Cardputer.Display.setTextColor(0x7BEF, BLACK);  // Gray color
+        M5Cardputer.Display.setCursor(60, SCREEN_HEIGHT - 8);
+        M5Cardputer.Display.print("Press any key to skip");
+        
+        // === Author Credit (appears after 1 second) ===
+        if (elapsed > 1000) {
+            M5Cardputer.Display.setTextColor(0x7BEF, BLACK);
+            M5Cardputer.Display.setCursor(45, 95);
+            M5Cardputer.Display.print("By Stewart Moss (c) 2026");
+        }
+        
+        // === Elaborate Sound Sequence ===
+        int soundPhase = elapsed / 100;  // Change every 100ms
+        
+        if (soundPhase != lastSoundPhase) {
+            lastSoundPhase = soundPhase;
+            
+            // Phase 0-3 (0-300ms): Power-on ascending sweep
+            if (elapsed < 300) {
+                int freq = 400 + (elapsed * 2.67);  // 400Hz to 1200Hz
+                tone(BUZZER_PIN, freq);
+            }
+            // Phase 3-8 (300-800ms): Staccato system beeps
+            else if (elapsed < 800) {
+                int beepPhase = (elapsed - 300) / 100;
+                if (beepPhase % 2 == 0) {
+                    int freqs[] = {1000, 1200, 1400, 1600, 1800};
+                    tone(BUZZER_PIN, freqs[beepPhase / 2]);
+                } else {
+                    noTone(BUZZER_PIN);
+                }
+            }
+            // Phase 8-25 (800-2500ms): Scanning pulse synced with radar
+            else if (elapsed < 2500) {
+                int pulsePhase = ((elapsed - 800) / 200) % 2;
+                if (pulsePhase == 0) {
+                    tone(BUZZER_PIN, 600);
+                } else {
+                    tone(BUZZER_PIN, 900);
+                }
+            }
+            // Phase 25-30 (2500-3000ms): Silence before confirmation
+            else if (elapsed < 3000) {
+                noTone(BUZZER_PIN);
+            }
+            // Phase 30-35 (3000-3500ms): Data processing sounds
+            else if (elapsed < 3500) {
+                int clickPhase = ((elapsed - 3000) / 80) % 2;
+                if (clickPhase == 0) {
+                    tone(BUZZER_PIN, 2000);
+                } else {
+                    noTone(BUZZER_PIN);
+                }
+            }
+            // Phase 35-40 (3500-4000ms): Confirmation chime - descending
+            else if (elapsed < 3700) {
+                tone(BUZZER_PIN, 1600);
+            }
+            else if (elapsed < 3850) {
+                tone(BUZZER_PIN, 1200);
+            }
+            else if (elapsed < 4000) {
+                tone(BUZZER_PIN, 800);
+            }
+        }
+        
+        // === Check for Skip ===
+        M5Cardputer.update();
+        if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isPressed()) {
+            skipped = true;
+            noTone(BUZZER_PIN);
+        }
+        
+        delay(16);  // ~60fps
+    }
+    
+    // Ensure buzzer is off
+    noTone(BUZZER_PIN);
+    
+    // Brief pause before continuing
+    delay(100);
+    
+    #undef BUZZER_PIN
+    #undef INTRO_DURATION
+    #undef SCREEN_WIDTH
+    #undef SCREEN_HEIGHT
+}
+
 void Display::showConfigMode() {
     clearScreen();
     drawHeader("Config Mode");

@@ -26,6 +26,7 @@ void ConfigManager::setDefaults() {
     config.hardware.buzzer_freq = 2000;
     config.hardware.buzzer_duration_ms = 2000;
     config.hardware.screen_brightness = 128;
+    config.hardware.fancy_intro = true;
     
     config.debug.enabled = false;
 }
@@ -100,6 +101,7 @@ bool ConfigManager::loadConfig(const char* filename) {
         config.hardware.buzzer_freq = hardware["buzzer_freq"] | 2000;
         config.hardware.buzzer_duration_ms = hardware["buzzer_duration_ms"] | 2000;
         config.hardware.screen_brightness = hardware["screen_brightness"] | 128;
+        config.hardware.fancy_intro = hardware["fancy_intro"] | true;
     }
     
     // Parse Debug config
@@ -152,6 +154,7 @@ bool ConfigManager::saveConfig(const char* filename) {
     hardware["buzzer_freq"] = config.hardware.buzzer_freq;
     hardware["buzzer_duration_ms"] = config.hardware.buzzer_duration_ms;
     hardware["screen_brightness"] = config.hardware.screen_brightness;
+    hardware["fancy_intro"] = config.hardware.fancy_intro;
     
     // Debug config
     JsonObject debug = doc.createNestedObject("debug");
