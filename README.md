@@ -222,6 +222,3 @@ deauth_detector/
 
 This project is provided as-is for educational and security research purposes.
 
-## Disclaimer
-
-This tool is intended for monitoring your own networks and authorized security testing only. Unauthorized interception of wireless communications may be illegal in your jurisdiction. Use responsibly.
