@@ -12,109 +12,127 @@
 // FastLED setup for SK6812
 CRGB leds[NUM_LEDS];
 
-AlertManager::AlertManager(HardwareConfig& config) 
-    : hwConfig(config), alertActive(false), alertStartTime(0), 
+AlertManager::AlertManager(HardwareConfig &config)
+    : hwConfig(config), alertActive(false), alertStartTime(0),
       lastPacketTime(0), ledTimer(0), ledCountdownActive(false) {}
 
-void AlertManager::begin() {
+void AlertManager::begin()
+{
     pinMode(BUZZER_PIN, OUTPUT);
     digitalWrite(BUZZER_PIN, LOW);
-    
+
     // Initialize LED (SK6812)
     FastLED.addLeds<SK6812, LED_PIN, GRB>(leds, NUM_LEDS);
     FastLED.setBrightness(LED_BRIGHTNESS);
     setLED(0x000000); // Start with LED off
-    
+
     M5Cardputer.Display.setBrightness(hwConfig.screen_brightness);
 }
 
-void AlertManager::triggerAlert() {
+void AlertManager::triggerAlert()
+{
     alertActive = true;
     alertStartTime = millis();
     lastPacketTime = millis();
-    
+
     // Sound buzzer
     setBuzzer(true);
-    
+
     // Set LED to red
     setLED(0xFF0000);
-    
+
     // Start LED countdown
     ledCountdownActive = true;
     ledTimer = millis();
-    
+
     logger.debugPrintln("Alert triggered!");
 }
 
-void AlertManager::update() {
+void AlertManager::update()
+{
     // Handle buzzer duration
-    if (alertActive && (millis() - alertStartTime) > hwConfig.buzzer_duration_ms) {
+    if (alertActive && (millis() - alertStartTime) > hwConfig.buzzer_duration_ms)
+    {
         setBuzzer(false);
     }
-    
+
     // Handle LED countdown
-    if (ledCountdownActive) {
+    if (ledCountdownActive)
+    {
         unsigned long silenceTime = millis() - lastPacketTime;
         unsigned long silenceGapMs = hwConfig.screen_brightness * 1000; // Reusing this as silence gap isn't in HW config
-        
+
         // Check if silence gap has been reached
-        if (silenceTime > 30000) { // 30 second default silence gap
+        if (silenceTime > 30000)
+        { // 30 second default silence gap
             // Start 5-minute countdown
             unsigned long countdownTime = millis() - ledTimer;
-            if (countdownTime > 300000) { // 5 minutes
+            if (countdownTime > 300000)
+            { // 5 minutes
                 // Turn off LED
                 setLED(0x000000);
                 ledCountdownActive = false;
                 alertActive = false;
                 logger.debugPrintln("Alert cleared after silence period");
             }
-        } else {
+        }
+        else
+        {
             // Reset countdown if packets are still coming
             ledTimer = millis();
         }
     }
 }
 
-void AlertManager::setBuzzer(bool state) {
-    if (state) {
-        tone(BUZZER_PIN, hwConfig.buzzer_freq);
-    } else {
-        noTone(BUZZER_PIN);
+void AlertManager::setBuzzer(bool state)
+{
+    if (state)
+    {
+        M5Cardputer.Speaker.tone(hwConfig.buzzer_freq); // noTone
+    }
+    else
+    {
+        M5Cardputer.Speaker.end(); // noTone
     }
 }
 
-void AlertManager::setLED(uint32_t color) {
+void AlertManager::setLED(uint32_t color)
+{
     // Extract RGB components from 32-bit color
     uint8_t r = (color >> 16) & 0xFF;
     uint8_t g = (color >> 8) & 0xFF;
     uint8_t b = color & 0xFF;
-    
+
     // Set LED color using FastLED
     leds[0] = CRGB(r, g, b);
     FastLED.show(LED_BRIGHTNESS);
-    
+
     char buf[64];
     snprintf(buf, sizeof(buf), "LED color set to: 0x%06X (R:%d G:%d B:%d)", color, r, g, b);
     logger.debugPrintln(buf);
 }
 
 // LED status indicators for system states
-void AlertManager::setStatusConnecting() {
+void AlertManager::setStatusConnecting()
+{
     setLED(0xFFFF00); // Yellow
     logger.debugPrintln("LED Status: Connecting to WiFi");
 }
 
-void AlertManager::setStatusSyncing() {
+void AlertManager::setStatusSyncing()
+{
     setLED(0x0000FF); // Blue
     logger.debugPrintln("LED Status: Syncing time");
 }
 
-void AlertManager::setStatusScanning() {
+void AlertManager::setStatusScanning()
+{
     setLED(0xFFFF00); // Yellow
     logger.debugPrintln("LED Status: Scanning WiFi channels");
 }
 
-void AlertManager::setStatusReady() {
+void AlertManager::setStatusReady()
+{
     setLED(0x000000); // Off
     logger.debugPrintln("LED Status: System ready");
 }

@@ -90,7 +90,7 @@ void setup() {
     if (config.hardware.fancy_intro) {
         display.showAnimatedIntro();
     } else {
-        delay(2000);  // Simple startup already shown, just wait
+        delay(200);  // Simple startup already shown, just wait
     }
     
     // Set config for logger (enables debug file logging if configured)
