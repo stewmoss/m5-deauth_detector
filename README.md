@@ -1,260 +1,94 @@
 # M5 Cardputer Deauth Detector
 
-A handheld Wi-Fi security monitor built for the M5Stack Cardputer (StampS3) that detects deauthentication attacks on protected networks.
+A portable Wi-Fi security monitor for the M5Stack Cardputer that detects and alerts on deauthentication attacks targeting your protected networks.
 
-## Features
+![Platform](https://img.shields.io/badge/Platform-ESP32--S3-blue)
+![Framework](https://img.shields.io/badge/Framework-PlatformIO-orange)
+![License](https://img.shields.io/badge/License-Educational-green)
 
-- **Real-time Deauth Detection**: Monitors for deauthentication packets targeting specified SSIDs
-- **Hardware Feedback**: Immediate buzzer and LED alerts when attacks are detected
-- **Local Logging**: Saves all events to SD card in CSV format
-- **Remote API Reporting**: Sends batch alerts to a configurable REST API endpoint
-- **Web Configuration Portal**: Easy setup via browser interface
-- **Multiple Display Views**: Dashboard, live log, and detailed statistics
-- **Time Synchronization**: Correct device time with ntp.
+## Overview
+
+The Deauth Detector transforms your M5Stack Cardputer into a dedicated security monitoring device that continuously scans for 802.11 deauthentication frames—a common attack vector used to disconnect clients from wireless networks.
+
+## Key Features
+
+- **Real-time Attack Detection** — Monitors for deauthentication packets on protected networks
+- **Multi-channel Scanning** — Intelligently hops only across channels where your networks broadcast
+- **Hardware Alerts** — Immediate buzzer and LED notification when attacks are detected
+- **Web Configuration** — Browser-based setup interface with tabbed configuration
+- **SD Card Logging** — Persistent CSV logging of all detected events
+- **API Reporting** — Batch reporting to external security systems via REST API
+- **NTP Time Sync** — Accurate timestamps for all logged events
 
 ## Hardware Requirements
 
-- M5Stack Cardputer (ESP32-S3)
-- MicroSD card (for configuration and logging)
-- Built-in display, keyboard, buzzer, and LED
+| Component | Specification |
+|-----------|---------------|
+| Device | M5Stack Cardputer (ESP32-S3 StampS3) |
+| Storage | MicroSD card (FAT32 formatted) |
+| Display | Built-in 240×135 ST7789 TFT LCD |
+| Input | Integrated keyboard + G0 button |
+| Alerts | SK6812 RGB LED + Buzzer |
 
-## Installation
+## Quick Start
 
-### Using PlatformIO
+1. **Flash the firmware** using PlatformIO
+2. **Insert a FAT32 formatted SD card**
+3. **Power on** — device enters configuration mode automatically
+4. **Connect to the `M5-DeauthDetector` WiFi network**
+5. **Navigate to `http://192.168.4.1`** and configure your settings
+6. **Save and restart** — monitoring begins automatically
 
-1. Clone or download this project
-2. Open in VS Code with PlatformIO extension
-3. Connect your M5 Cardputer via USB
-4. Build and upload:
-   ```
-   pio run --target upload
-   ```
+## Documentation
 
-### Initial Setup
+Full documentation is available in the [docs](docs/) folder:
 
-1. Insert a formatted microSD card into the M5 Cardputer
-2. Copy `config.txt.example` to the SD card root and rename it to `config.txt`
-3. Edit `config.txt` with your settings (or use the web interface after first boot)
-4. Power on the device
+| Document | Description |
+|----------|-------------|
+| [Getting Started](docs/getting-started.md) | Installation and initial setup |
+| [Configuration](docs/configuration.md) | Complete configuration reference |
+| [Web Interface](docs/web-interface.md) | Web portal usage guide |
+| [Operation Guide](docs/operation.md) | Using the device and display views |
+| [API Integration](docs/api-integration.md) | REST API payload and integration |
+| [Troubleshooting](docs/troubleshooting.md) | Common issues and solutions |
 
-## Configuration
+## Project Structure
 
-### First Boot
-
-If no valid configuration is found, the device will automatically enter **Config Mode**:
-
-1. Device creates WiFi AP: `M5-DeauthDetector`
-2. Connect to this network from your phone/computer
-3. Navigate to `http://192.168.4.1`
-4. Login with default credentials:
-   - Username: `admin`
-   - Password: `1234`
-5. Configure settings and save
-
-### Configuration File Structure
-
-The `config.txt` file uses JSON format with the following sections:
-
-#### WiFi Settings
-```json
-"wifi": {
-  "sta_ssid": "Your_Home_Network",
-  "sta_password": "Your_Password",
-  "admin_user": "admin",
-  "admin_pass": "1234"
-}
-```
-
-#### NTP Settings
-```json
-"ntp": {
-  "server": "pool.ntp.org",
-  "timezone_offset": 0,
-  "daylight_savings": false
-}
-```
-
-#### Detection Settings
-```json
-"detection": {
-  "protected_ssids": ["Home_WiFi", "Office_Secure"],
-  "silence_gap_seconds": 30,
-  "led_hold_seconds": 300,
-  "reporting_interval_seconds": 10
-}
-```
-
-#### API Settings
-```json
-"api": {
-  "endpoint_url": "https://your-api.com/v1/alerts",
-  "custom_header_name": "X-API-KEY",
-  "custom_header_value": "secret-token-123"
-}
-```
-
-#### Hardware Settings
-```json
-"hardware": {
-  "buzzer_freq": 2000,
-  "buzzer_duration_ms": 2000,
-  "screen_brightness": 128
-}
-```
-
-#### Debug Settings
-```json
-"debug": {
-  "enabled": false
-}
-```
-
-## Usage
-
-### Monitor Mode (Normal Operation)
-
-1. Device scans for protected SSIDs and identifies their channels
-2. Enters promiscuous mode to monitor for deauth packets
-3. When attack detected:
-   - Buzzer sounds for configured duration
-   - LED turns solid red
-   - Event logged to SD card
-   - Event queued for API reporting
-
-### Display Views
-
-Press **ENTER** to cycle through views:
-
-1. **Dashboard**: Shows all protected SSIDs with attack counters
-2. **Live Log**: Displays the 5 most recent events
-3. **Detailed**: One SSID per page with full statistics
-
-### Debug Logging
-
-Debug logging captures all system messages to a file on the SD card for troubleshooting.
-
-#### Enabling Debug Logging
-
-1. **Via Web Interface**: Navigate to the "Debug" tab and check "Enable Debug Logging"
-2. **Via Config File**: Set `"debug": { "enabled": true }` in config.txt
-
-#### Viewing Debug Logs
-
-- **Web Interface**: Click "View Debug Log" in the Debug tab to view logs in browser
-- **SD Card**: Read `/deauthdetector/logs/debug.log` directly from the SD card
-
-#### Clearing Debug Logs
-
-- **Web Interface**: Click "Clear Debug Log" button in the Debug tab
-- **Automatic**: Log is automatically cleared on each device reboot
-
-### Entering Config Mode
-
-Hold the **GO button** (G0) for 2 seconds while in Monitor Mode
-
-### API Payload Format
-
-Events are sent as JSON array via POST:
-
-```json
-[
-  {
-    "timestamp": "2026-01-13T10:15:00Z",
-    "target_ssid": "Home_WiFi",
-    "target_bssid": "AA:BB:CC:DD:EE:FF",
-    "attacker_mac": "11:22:33:44:55:66",
-    "channel": 6,
-    "rssi": -45,
-    "packet_count": 24
-  }
-]
-```
-
-### Log Files
-
-Logs are stored in `/deauthdetector/logs/` directory on SD card:
-
-#### Session Logs
-- Format: CSV
-- Filename: `deauthdetect_session_YYYYMMDD_HHMMSS.csv`
-- New session file created on each boot
-- Contains: timestamp, target_ssid, target_bssid, attacker_mac, channel, rssi, packet_count
-
-#### Debug Log
-- Filename: `debug.log`
-- Cleared on each boot
-- Only written when debug logging is enabled
-- Contains all system messages (WiFi status, config loading, alerts, etc.)
-
-## Troubleshooting
-
-### SD Card Error
-- Ensure SD card is formatted as FAT32
-- Check that card is properly inserted
-- Try a different SD card
-
-### Config Not Loading
-- Verify `config.txt` exists in SD card root
-- Check JSON syntax is valid
-- Review serial monitor output for error messages
-
-### No WiFi Connection
-- Verify SSID and password in config
-- Check WiFi network is 2.4GHz (ESP32 doesn't support 5GHz)
-- Ensure network is within range
-
-### No Deauth Detection
-- Verify protected SSIDs are broadcasting
-- Check that SSIDs are spelled correctly in config
-- Ensure networks are on 2.4GHz band
-
-## Technical Notes
-
-### Channel Hopping
-The device only monitors channels where protected SSIDs are detected, optimizing detection efficiency.
-
-### Promiscuous Mode
-WiFi adapter operates in promiscuous mode to capture all management frames on monitored channels.
-
-### Time Synchronization
-Device syncs time via NTP on boot. If sync fails, timestamps will be incorrect until next successful sync.
-
-## Development
-
-### Project Structure
 ```
 deauth_detector/
+├── docs/                 # Documentation
 ├── include/              # Header files
-│   ├── Config.h
-│   ├── ConfigManager.h
-│   ├── DeauthDetector.h
-│   ├── Display.h
-│   ├── WiFiManager.h
-│   ├── WebPortal.h
-│   ├── Logger.h
-│   ├── APIReporter.h
-│   └── AlertManager.h
-├── src/                  # Implementation files
-│   ├── main.cpp
-│   ├── ConfigManager.cpp
-│   ├── DeauthDetector.cpp
-│   ├── Display.cpp
-│   ├── WiFiManager.cpp
-│   ├── WebPortal.cpp
-│   ├── Logger.cpp
-│   ├── APIReporter.cpp
-│   └── AlertManager.cpp
-├── platformio.ini        # PlatformIO configuration
-└── config.txt.example    # Example configuration
+├── src/                  # Source files
+├── config.txt.example    # Example configuration
+├── platformio.ini        # Build configuration
+└── README.md
 ```
 
-### Dependencies
+## Building
+
+```bash
+# Clone the repository
+git clone https://github.com/your-repo/deauth_detector.git
+
+# Build and upload with PlatformIO
+pio run --target upload
+
+# Monitor serial output (optional)
+pio device monitor
+```
+
+## Dependencies
+
 - M5Cardputer library
 - ArduinoJson
-- ESP32 WiFi (built-in)
-- SD (built-in)
+- FastLED
+- ESP32 WiFi/SD (built-in)
+
+## Author
+
+Stewart Moss © 2026
 
 ## License
 
-This project is provided as-is for educational and security research purposes.
+This project is provided for educational and security research purposes only. Use responsibly and only on networks you own or have explicit permission to monitor.
 
