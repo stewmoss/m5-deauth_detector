@@ -14,7 +14,11 @@
     "protected_ssids": ["Home_WiFi", "Office_Secure"],
     "silence_gap_seconds": 30,
     "led_hold_seconds": 300,
-    "reporting_interval_seconds": 10
+    "reporting_interval_seconds": 10,
+    "packet_threshold": 250,
+    "detect_all_deauth": false,
+    "channel_scan_time_ms": 100,
+    "channel_hop_interval_ms": 75
   },
   "api": {
     "endpoint_url": "https://your-api.com/v1/alerts",
@@ -24,7 +28,8 @@
   "hardware": {
     "buzzer_freq": 2000,
     "buzzer_duration_ms": 2000,
-    "screen_brightness": 128
+    "screen_brightness": 128,
+    "fancy_intro": true
   },
   "debug": {
     "enabled": false

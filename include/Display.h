@@ -16,6 +16,7 @@ public:
     Display();
     void begin();
     void showStartup();
+    void showAnimatedIntro();
     void showConfigMode();
     void showMonitoring();
     void showDashboard(const std::vector<String>& ssids, DeauthDetector& detector);
