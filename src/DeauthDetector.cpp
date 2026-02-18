@@ -25,10 +25,11 @@ typedef struct {
     uint8_t payload[0];
 } wifi_ieee80211_packet_t;
 
-DeauthDetector::DeauthDetector() : monitoring(false) {}
+DeauthDetector::DeauthDetector() : monitoring(false), currentChannelIndex(0), lastChannelHopTime(0) {}
 
-void DeauthDetector::begin(const std::vector<String>& protected_ssids) {
+void DeauthDetector::begin(const std::vector<String>& protected_ssids, const DetectionConfig& config) {
     protectedSSIDs = protected_ssids;
+    detectionConfig = config;
     detectorInstance = this;
     
     // Discover which channels the protected SSIDs are on
@@ -47,7 +48,7 @@ void DeauthDetector::discoverChannels() {
     // Note: LED control will be added from main.cpp before calling this method
     
     for (int channel = 1; channel <= 14; channel++) {
-        int n = WiFi.scanNetworks(false, true, false, 100, channel);
+        int n = WiFi.scanNetworks(false, true, false, detectionConfig.channel_scan_time_ms, channel);
         
         for (int i = 0; i < n; i++) {
             String ssid = WiFi.SSID(i);
@@ -101,6 +102,13 @@ void DeauthDetector::startMonitoring() {
     esp_wifi_set_promiscuous(true);
     esp_wifi_set_promiscuous_rx_cb(&DeauthDetector::packetHandler);
     
+    // Initialize channel hopping
+    currentChannelIndex = 0;
+    lastChannelHopTime = millis();
+    if (!activeChannels.empty()) {
+        esp_wifi_set_channel(activeChannels[0], WIFI_SECOND_CHAN_NONE);
+    }
+    
     monitoring = true;
 }
 
@@ -111,6 +119,21 @@ void DeauthDetector::stopMonitoring() {
     
     esp_wifi_set_promiscuous(false);
     monitoring = false;
+}
+
+void DeauthDetector::updateChannelHop() {
+    if (!monitoring || activeChannels.empty()) return;
+    
+    unsigned long currentTime = millis();
+    if (currentTime - lastChannelHopTime >= detectionConfig.channel_hop_interval_ms) {
+        currentChannelIndex = (currentChannelIndex + 1) % activeChannels.size();
+        esp_wifi_set_channel(activeChannels[currentChannelIndex], WIFI_SECOND_CHAN_NONE);
+        lastChannelHopTime = currentTime;
+    }
+}
+
+bool DeauthDetector::shouldDetectDeauth() {
+    return detectionConfig.detect_all_deauth || !protectedSSIDs.empty();
 }
 
 void DeauthDetector::packetHandler(void* buf, wifi_promiscuous_pkt_type_t type) {
@@ -140,6 +163,22 @@ void DeauthDetector::packetHandler(void* buf, wifi_promiscuous_pkt_type_t type) 
         String bssidStr = String(bssid);
         String senderStr = String(sender);
         
+        // Count packets by BSSID
+        String key = bssidStr;
+        ssidPacketCounts[key]++;
+        
+        // Check packet threshold
+        if (ssidPacketCounts[key] > detectorInstance->detectionConfig.packet_threshold) {
+            return; // Skip if threshold exceeded
+        }
+        
+        // Check if we should detect this based on config
+        if (!detectorInstance->detectionConfig.detect_all_deauth) {
+            // Only detect if it's a protected SSID (filtering mode)
+            // For now, we'll still record it as we can't easily map BSSID to SSID in the callback
+            // The filtering will be done at reporting/display level
+        }
+        
         // Try to match with protected SSIDs
         // Note: We need to do a reverse lookup or track BSSID->SSID mapping
         // For now, we'll create an event and mark SSID as "Unknown" if we can't determine it
@@ -151,11 +190,6 @@ void DeauthDetector::packetHandler(void* buf, wifi_promiscuous_pkt_type_t type) 
         event.attacker_mac = senderStr;
         event.channel = pkt->rx_ctrl.channel;
         event.rssi = pkt->rx_ctrl.rssi;
-        event.packet_count = 1;
-        
-        // Count packets by BSSID
-        String key = bssidStr;
-        ssidPacketCounts[key]++;
         event.packet_count = ssidPacketCounts[key];
         
         detectorInstance->events.push_back(event);

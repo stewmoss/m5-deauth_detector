@@ -138,7 +138,7 @@ void setup() {
   
     
 
-    detector.begin(config.detection.protected_ssids);
+    detector.begin(config.detection.protected_ssids, config.detection);
     alertManager->setStatusReady();
     
     // Enter monitor mode
@@ -246,6 +246,9 @@ void handleConfigMode() {
 
 void handleMonitorMode() {
     AppConfig& config = configManager.getConfig();
+    
+    // Update channel hopping
+    detector.updateChannelHop();
     
     // Update alert manager
     if (alertManager) {

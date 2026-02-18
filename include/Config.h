@@ -4,6 +4,11 @@
 #include <Arduino.h>
 #include <vector>
 
+// Detection constants
+#define DEFAULT_PACKET_THRESHOLD 250
+#define DEFAULT_CHANNEL_SCAN_TIME_MS 100
+#define DEFAULT_CHANNEL_HOP_INTERVAL_MS 500
+
 struct WiFiConfig {
     String sta_ssid;
     String sta_password;
@@ -22,6 +27,10 @@ struct DetectionConfig {
     int silence_gap_seconds;
     int led_hold_seconds;
     int reporting_interval_seconds;
+    int packet_threshold;
+    bool detect_all_deauth;
+    int channel_scan_time_ms;
+    int channel_hop_interval_ms;
 };
 
 struct APIConfig {

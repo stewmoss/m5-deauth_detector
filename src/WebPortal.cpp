@@ -120,6 +120,16 @@ void WebPortal::handleSave() {
     if (server.hasArg("reporting_interval")) {
         config.detection.reporting_interval_seconds = server.arg("reporting_interval").toInt();
     }
+    if (server.hasArg("packet_threshold")) {
+        config.detection.packet_threshold = server.arg("packet_threshold").toInt();
+    }
+    config.detection.detect_all_deauth = server.hasArg("detect_all_deauth");
+    if (server.hasArg("channel_scan_time")) {
+        config.detection.channel_scan_time_ms = server.arg("channel_scan_time").toInt();
+    }
+    if (server.hasArg("channel_hop_interval")) {
+        config.detection.channel_hop_interval_ms = server.arg("channel_hop_interval").toInt();
+    }
     
     if (server.hasArg("api_url")) {
         config.api.endpoint_url = server.arg("api_url");
@@ -331,6 +341,21 @@ String WebPortal::generateHTML() {
                 
                 <label>Reporting Interval (seconds):</label>
                 <input type='number' name='reporting_interval' value=')" + String(config.detection.reporting_interval_seconds) + R"('>
+                
+                <label>Packet Threshold:</label>
+                <input type='number' name='packet_threshold' value=')" + String(config.detection.packet_threshold) + R"(' min='1'>
+                
+                <label>
+                    <input type='checkbox' name='detect_all_deauth' value='true' )" + 
+                    String(config.detection.detect_all_deauth ? "checked" : "") + R"(>
+                    Detect All Deauth (not just protected SSIDs)
+                </label>
+                
+                <label>Channel Scan Time (milliseconds):</label>
+                <input type='number' name='channel_scan_time' value=')" + String(config.detection.channel_scan_time_ms) + R"(' min='50'>
+                
+                <label>Channel Hop Interval (milliseconds):</label>
+                <input type='number' name='channel_hop_interval' value=')" + String(config.detection.channel_hop_interval_ms) + R"(' min='100'>
             </div>
             
             <div id='api' class='tab-content'>

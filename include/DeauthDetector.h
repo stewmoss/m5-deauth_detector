@@ -19,7 +19,7 @@ struct DeauthEvent {
 class DeauthDetector {
 public:
     DeauthDetector();
-    void begin(const std::vector<String>& protected_ssids);
+    void begin(const std::vector<String>& protected_ssids, const DetectionConfig& config);
     void startMonitoring();
     void stopMonitoring();
     bool hasEvents();
@@ -28,6 +28,7 @@ public:
     int getEventCountForSSID(const String& ssid);
     DeauthEvent getLastEventForSSID(const String& ssid);
     int getChannelForSSID(const String& ssid);
+    void updateChannelHop();
 
 private:
     std::vector<String> protectedSSIDs;
@@ -35,6 +36,14 @@ private:
     std::vector<int> activeChannels;
     std::map<String, int> ssidChannelMap;
     bool monitoring;
+    DetectionConfig detectionConfig;
+    int currentChannelIndex;
+    unsigned long lastChannelHopTime;
+    
+    void discoverChannels();
+    static void packetHandler(void* buf, wifi_promiscuous_pkt_type_t type);
+    bool isProtectedSSID(const String& ssid);
+    bool shouldDetectDeauth();
     
     void discoverChannels();
     static void packetHandler(void* buf, wifi_promiscuous_pkt_type_t type);
