@@ -95,15 +95,14 @@ Updated `config.txt.example` with new settings:
 4. **include/DeauthDetector.h**
    - Modified `begin()` signature to accept `DetectionConfig`
    - Added new member variables for channel hopping and config storage
-   - Added `updateChannelHop()` and `shouldDetectDeauth()` methods
+   - Added `updateChannelHop()` method
 
 5. **src/DeauthDetector.cpp**
    - Updated constructor to initialize new member variables
    - Modified `begin()` to store config and pass to `discoverChannels()`
-   - Updated `discoverChannels()` to use configured scan time
+   - Updated `discoverChannels()` to use configured scan time and handle detect_all_deauth
    - Modified `startMonitoring()` to initialize channel hopping
    - Added `updateChannelHop()` implementation for periodic channel switching
-   - Added `shouldDetectDeauth()` implementation for detection mode check
    - Updated `packetHandler()` to enforce packet threshold
 
 6. **src/main.cpp**
