@@ -355,7 +355,7 @@ String WebPortal::generateHTML() {
                 <input type='number' name='channel_scan_time' value=')" + String(config.detection.channel_scan_time_ms) + R"(' min='50'>
                 
                 <label>Channel Hop Interval (milliseconds):</label>
-                <input type='number' name='channel_hop_interval' value=')" + String(config.detection.channel_hop_interval_ms) + R"(' min='100'>
+                <input type='number' name='channel_hop_interval' value=')" + String(config.detection.channel_hop_interval_ms) + R"(' min='75'>
             </div>
             
             <div id='api' class='tab-content'>

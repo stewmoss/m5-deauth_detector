@@ -48,7 +48,7 @@ This document describes the implementation of new configuration settings for the
 **Requirement**: Ensure the same channel hop setting is used for step 6 and for step 4 (consistent configuration)
 
 **Implementation**:
-- Added `DEFAULT_CHANNEL_HOP_INTERVAL_MS` constant in `Config.h` set to 500ms
+- Added `DEFAULT_CHANNEL_HOP_INTERVAL_MS` constant in `Config.h` set to 75ms
 - Added `channel_hop_interval_ms` field to `DetectionConfig` struct
 - Updated `ConfigManager` to load/save the setting
 - Updated `WebPortal` to display the setting with a minimum value of 100ms
@@ -72,7 +72,7 @@ Updated `config.txt.example` with new settings:
     "packet_threshold": 250,
     "detect_all_deauth": false,
     "channel_scan_time_ms": 100,
-    "channel_hop_interval_ms": 500
+    "channel_hop_interval_ms": 75
   }
 }
 ```

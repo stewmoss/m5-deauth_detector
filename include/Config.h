@@ -7,7 +7,7 @@
 // Detection constants
 #define DEFAULT_PACKET_THRESHOLD 250
 #define DEFAULT_CHANNEL_SCAN_TIME_MS 100
-#define DEFAULT_CHANNEL_HOP_INTERVAL_MS 500
+#define DEFAULT_CHANNEL_HOP_INTERVAL_MS 75
 
 struct WiFiConfig {
     String sta_ssid;

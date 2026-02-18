@@ -48,7 +48,7 @@ Configuration can be modified through:
     "packet_threshold": 250,
     "detect_all_deauth": false,
     "channel_scan_time_ms": 100,
-    "channel_hop_interval_ms": 500
+    "channel_hop_interval_ms": 75
   },
   "api": {
     "endpoint_url": "https://your-api.com/v1/alerts",
@@ -144,7 +144,7 @@ Controls which networks to monitor and alert behavior.
 | `packet_threshold` | Integer | `250` | Maximum deauth packets to record per BSSID |
 | `detect_all_deauth` | Boolean | `false` | Detect all deauth packets (not just protected SSIDs) |
 | `channel_scan_time_ms` | Integer | `100` | Time in milliseconds to scan each channel during discovery |
-| `channel_hop_interval_ms` | Integer | `500` | Time in milliseconds between channel hops during monitoring |
+| `channel_hop_interval_ms` | Integer | `75` | Time in milliseconds between channel hops during monitoring |
 
 **Example:**
 
@@ -162,7 +162,7 @@ Controls which networks to monitor and alert behavior.
   "packet_threshold": 250,
   "detect_all_deauth": false,
   "channel_scan_time_ms": 100,
-  "channel_hop_interval_ms": 500
+  "channel_hop_interval_ms": 75
 }
 ```
 
@@ -208,10 +208,10 @@ Attack Detected          Silence Gap           LED Hold         Clear
 
 **Channel Hop Interval (`channel_hop_interval_ms`)**
 - How often the detector switches between WiFi channels during monitoring
-- Lower values (100-300ms): More frequent switching, better coverage, higher CPU usage
-- Higher values (500-1000ms): Less frequent switching, lower CPU usage
-- Default: 500ms (2 channels per second)
-- Must be at least 100ms for stable operation
+- Lower values (75-100ms): More frequent switching, better coverage, higher CPU usage
+- Higher values (200-500ms): Less frequent switching, lower CPU usage
+- Default: 75ms (13.3 channels per second)
+- Must be at least 75ms for stable operation
 
 ---
 

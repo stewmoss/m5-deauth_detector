@@ -18,7 +18,7 @@
     "packet_threshold": 250,
     "detect_all_deauth": false,
     "channel_scan_time_ms": 100,
-    "channel_hop_interval_ms": 500
+    "channel_hop_interval_ms": 75
   },
   "api": {
     "endpoint_url": "https://your-api.com/v1/alerts",
