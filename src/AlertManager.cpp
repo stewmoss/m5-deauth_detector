@@ -60,7 +60,6 @@ void AlertManager::update()
     if (ledCountdownActive)
     {
         unsigned long silenceTime = millis() - lastPacketTime;
-        unsigned long silenceGapMs = hwConfig.screen_brightness * 1000; // Reusing this as silence gap isn't in HW config
 
         // Check if silence gap has been reached
         if (silenceTime > 30000)

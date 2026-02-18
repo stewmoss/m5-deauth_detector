@@ -111,12 +111,6 @@ void WebPortal::handleSave() {
         }
     }
     
-    if (server.hasArg("silence_gap")) {
-        config.detection.silence_gap_seconds = server.arg("silence_gap").toInt();
-    }
-    if (server.hasArg("led_hold")) {
-        config.detection.led_hold_seconds = server.arg("led_hold").toInt();
-    }
     if (server.hasArg("reporting_interval")) {
         config.detection.reporting_interval_seconds = server.arg("reporting_interval").toInt();
     }
@@ -333,12 +327,7 @@ String WebPortal::generateHTML() {
     
     html += R"(' required>
                 
-                <label>Silence Gap (seconds):</label>
-                <input type='number' name='silence_gap' value=')" + String(config.detection.silence_gap_seconds) + R"('>
-                
-                <label>LED Hold Time (seconds):</label>
-                <input type='number' name='led_hold' value=')" + String(config.detection.led_hold_seconds) + R"('>
-                
+
                 <label>Reporting Interval (seconds):</label>
                 <input type='number' name='reporting_interval' value=')" + String(config.detection.reporting_interval_seconds) + R"('>
                 

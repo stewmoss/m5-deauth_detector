@@ -15,8 +15,6 @@ void ConfigManager::setDefaults() {
     config.ntp.timezone_offset = 0;
     config.ntp.daylight_savings = false;
     
-    config.detection.silence_gap_seconds = 30;
-    config.detection.led_hold_seconds = 300;
     config.detection.reporting_interval_seconds = 10;
     config.detection.packet_threshold = DEFAULT_PACKET_THRESHOLD;
     config.detection.detect_all_deauth = false;
@@ -86,8 +84,6 @@ bool ConfigManager::loadConfig(const char* filename) {
             }
         }
         
-        config.detection.silence_gap_seconds = detection["silence_gap_seconds"] | 30;
-        config.detection.led_hold_seconds = detection["led_hold_seconds"] | 300;
         config.detection.reporting_interval_seconds = detection["reporting_interval_seconds"] | 10;
         config.detection.packet_threshold = detection["packet_threshold"] | DEFAULT_PACKET_THRESHOLD;
         config.detection.detect_all_deauth = detection["detect_all_deauth"] | false;
@@ -147,8 +143,6 @@ bool ConfigManager::saveConfig(const char* filename) {
     for (const String& ssid : config.detection.protected_ssids) {
         ssids.add(ssid);
     }
-    detection["silence_gap_seconds"] = config.detection.silence_gap_seconds;
-    detection["led_hold_seconds"] = config.detection.led_hold_seconds;
     detection["reporting_interval_seconds"] = config.detection.reporting_interval_seconds;
     detection["packet_threshold"] = config.detection.packet_threshold;
     detection["detect_all_deauth"] = config.detection.detect_all_deauth;

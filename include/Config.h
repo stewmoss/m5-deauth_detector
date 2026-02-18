@@ -24,8 +24,6 @@ struct NTPConfig {
 
 struct DetectionConfig {
     std::vector<String> protected_ssids;
-    int silence_gap_seconds;
-    int led_hold_seconds;
     int reporting_interval_seconds;
     int packet_threshold;
     bool detect_all_deauth;
