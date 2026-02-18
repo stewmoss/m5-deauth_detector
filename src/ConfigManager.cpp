@@ -18,6 +18,10 @@ void ConfigManager::setDefaults() {
     config.detection.silence_gap_seconds = 30;
     config.detection.led_hold_seconds = 300;
     config.detection.reporting_interval_seconds = 10;
+    config.detection.packet_threshold = DEFAULT_PACKET_THRESHOLD;
+    config.detection.detect_all_deauth = false;
+    config.detection.channel_scan_time_ms = DEFAULT_CHANNEL_SCAN_TIME_MS;
+    config.detection.channel_hop_interval_ms = DEFAULT_CHANNEL_HOP_INTERVAL_MS;
     
     config.api.endpoint_url = "";
     config.api.custom_header_name = "X-API-KEY";
@@ -85,6 +89,10 @@ bool ConfigManager::loadConfig(const char* filename) {
         config.detection.silence_gap_seconds = detection["silence_gap_seconds"] | 30;
         config.detection.led_hold_seconds = detection["led_hold_seconds"] | 300;
         config.detection.reporting_interval_seconds = detection["reporting_interval_seconds"] | 10;
+        config.detection.packet_threshold = detection["packet_threshold"] | DEFAULT_PACKET_THRESHOLD;
+        config.detection.detect_all_deauth = detection["detect_all_deauth"] | false;
+        config.detection.channel_scan_time_ms = detection["channel_scan_time_ms"] | DEFAULT_CHANNEL_SCAN_TIME_MS;
+        config.detection.channel_hop_interval_ms = detection["channel_hop_interval_ms"] | DEFAULT_CHANNEL_HOP_INTERVAL_MS;
     }
     
     // Parse API config
@@ -142,6 +150,10 @@ bool ConfigManager::saveConfig(const char* filename) {
     detection["silence_gap_seconds"] = config.detection.silence_gap_seconds;
     detection["led_hold_seconds"] = config.detection.led_hold_seconds;
     detection["reporting_interval_seconds"] = config.detection.reporting_interval_seconds;
+    detection["packet_threshold"] = config.detection.packet_threshold;
+    detection["detect_all_deauth"] = config.detection.detect_all_deauth;
+    detection["channel_scan_time_ms"] = config.detection.channel_scan_time_ms;
+    detection["channel_hop_interval_ms"] = config.detection.channel_hop_interval_ms;
     
     // API config
     JsonObject api = doc.createNestedObject("api");

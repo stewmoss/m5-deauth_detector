@@ -44,7 +44,11 @@ Configuration can be modified through:
     "protected_ssids": ["Home_WiFi", "Office_Secure"],
     "silence_gap_seconds": 30,
     "led_hold_seconds": 300,
-    "reporting_interval_seconds": 10
+    "reporting_interval_seconds": 10,
+    "packet_threshold": 250,
+    "detect_all_deauth": false,
+    "channel_scan_time_ms": 100,
+    "channel_hop_interval_ms": 75
   },
   "api": {
     "endpoint_url": "https://your-api.com/v1/alerts",
@@ -137,6 +141,10 @@ Controls which networks to monitor and alert behavior.
 | `silence_gap_seconds` | Integer | `30` | Seconds of silence before starting LED countdown |
 | `led_hold_seconds` | Integer | `300` | Seconds to keep LED red after silence gap (5 minutes) |
 | `reporting_interval_seconds` | Integer | `10` | Interval for batch API reporting |
+| `packet_threshold` | Integer | `250` | Maximum deauth packets to record per BSSID |
+| `detect_all_deauth` | Boolean | `false` | Detect all deauth packets (not just protected SSIDs) |
+| `channel_scan_time_ms` | Integer | `100` | Time in milliseconds to scan each channel during discovery |
+| `channel_hop_interval_ms` | Integer | `75` | Time in milliseconds between channel hops during monitoring |
 
 **Example:**
 
@@ -150,7 +158,11 @@ Controls which networks to monitor and alert behavior.
   ],
   "silence_gap_seconds": 60,
   "led_hold_seconds": 600,
-  "reporting_interval_seconds": 30
+  "reporting_interval_seconds": 30,
+  "packet_threshold": 250,
+  "detect_all_deauth": false,
+  "channel_scan_time_ms": 100,
+  "channel_hop_interval_ms": 75
 }
 ```
 
@@ -172,6 +184,34 @@ Attack Detected          Silence Gap           LED Hold         Clear
     └───────────────────────┴───────────────────┴───────────────┘
     │◄─ Packets arriving ──►│◄── 30 seconds ───►│◄─ 5 minutes ─►│
 ```
+
+#### Understanding Detection Parameters
+
+**Packet Threshold (`packet_threshold`)**
+- Limits the number of deauth packet events recorded per BSSID
+- Prevents memory overflow during intense attacks
+- Once threshold is reached, additional packets from that BSSID are still detected but no new events are created
+- Default: 250 packets per BSSID
+- Example: If threshold is 250, exactly 250 events will be created for each unique BSSID
+
+**Detect All Deauth (`detect_all_deauth`)**
+- When `false` (default): Only deauth packets on channels with protected SSIDs are monitored
+- When `true`: All deauth packets on all channels are detected
+- Use `true` for comprehensive security monitoring
+- Use `false` for focused protection of specific networks
+
+**Channel Scan Time (`channel_scan_time_ms`)**
+- Duration in milliseconds to scan each channel during network discovery
+- Lower values (50-100ms): Faster scanning, may miss some networks
+- Higher values (200-500ms): More thorough scanning, takes longer
+- Default: 100ms (scans all 14 channels in ~1.4 seconds)
+
+**Channel Hop Interval (`channel_hop_interval_ms`)**
+- How often the detector switches between WiFi channels during monitoring
+- Lower values (75-100ms): More frequent switching, better coverage, higher CPU usage
+- Higher values (200-500ms): Less frequent switching, lower CPU usage
+- Default: 75ms (13.3 channels per second)
+- Must be at least 75ms for stable operation
 
 ---
 
@@ -302,7 +342,9 @@ Basic setup for home use with a single network:
     "admin_pass": "admin123"
   },
   "detection": {
-    "protected_ssids": ["MyHomeNetwork"]
+    "protected_ssids": ["MyHomeNetwork"],
+    "packet_threshold": 250,
+    "detect_all_deauth": false
   }
 }
 ```
@@ -333,7 +375,11 @@ Full configuration for security operations:
     ],
     "silence_gap_seconds": 60,
     "led_hold_seconds": 900,
-    "reporting_interval_seconds": 5
+    "reporting_interval_seconds": 5,
+    "packet_threshold": 500,
+    "detect_all_deauth": true,
+    "channel_scan_time_ms": 200,
+    "channel_hop_interval_ms": 300
   },
   "api": {
     "endpoint_url": "https://siem.corp.local/api/wifi-alerts",
@@ -366,7 +412,9 @@ Optimized for extended portable operation:
   },
   "detection": {
     "protected_ssids": ["Network"],
-    "reporting_interval_seconds": 60
+    "reporting_interval_seconds": 60,
+    "channel_scan_time_ms": 50,
+    "channel_hop_interval_ms": 1000
   },
   "hardware": {
     "buzzer_duration_ms": 500,
