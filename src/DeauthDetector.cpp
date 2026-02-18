@@ -167,18 +167,20 @@ void DeauthDetector::packetHandler(void* buf, wifi_promiscuous_pkt_type_t type) 
         // Count packets by BSSID
         String key = bssidStr;
         
-        // Check packet threshold before incrementing
+        // Check packet threshold - stop recording once limit reached
+        // If threshold is 250, we'll record packets 1-250, then stop
         if (ssidPacketCounts[key] >= detectorInstance->detectionConfig.packet_threshold) {
-            return; // Skip if threshold reached or exceeded
+            return; // Skip - threshold reached, don't record more packets
         }
         
-        // Increment after threshold check
+        // Increment count and record this packet
         ssidPacketCounts[key]++;
         
-        // Note: detect_all_deauth filtering cannot be implemented at packet level
-        // because we cannot reliably map BSSID to SSID in the callback context.
-        // Filtering by protected SSIDs should be implemented at the display/reporting level
-        // if needed in the future.
+        // Note: detect_all_deauth controls which channels are monitored.
+        // When enabled, all channels (1-14) are scanned and monitored.
+        // When disabled, only channels with protected SSIDs are monitored.
+        // Per-packet SSID filtering is not implemented because BSSID-to-SSID
+        // mapping is not reliably available in the packet callback context.
         
         // Try to match with protected SSIDs
         // Note: We need to do a reverse lookup or track BSSID->SSID mapping

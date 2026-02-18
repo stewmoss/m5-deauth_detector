@@ -188,10 +188,11 @@ Attack Detected          Silence Gap           LED Hold         Clear
 #### Understanding Detection Parameters
 
 **Packet Threshold (`packet_threshold`)**
-- Limits the number of deauth packets recorded per BSSID
+- Limits the number of deauth packet events recorded per BSSID
 - Prevents memory overflow during intense attacks
-- Once threshold is reached, additional packets from that BSSID are ignored
+- Once threshold is reached, additional packets from that BSSID are still detected but no new events are created
 - Default: 250 packets per BSSID
+- Example: If threshold is 250, exactly 250 events will be created for each unique BSSID
 
 **Detect All Deauth (`detect_all_deauth`)**
 - When `false` (default): Only deauth packets on channels with protected SSIDs are monitored
