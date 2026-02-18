@@ -43,7 +43,6 @@ private:
     void discoverChannels();
     static void packetHandler(void* buf, wifi_promiscuous_pkt_type_t type);
     bool isProtectedSSID(const String& ssid);
-    bool shouldDetectDeauth();
 };
 
 #endif

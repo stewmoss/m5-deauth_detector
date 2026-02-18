@@ -24,12 +24,13 @@ This document describes the implementation of new configuration settings for the
 - Added `detect_all_deauth` boolean field to `DetectionConfig` struct
 - Updated `ConfigManager` to handle the checkbox setting
 - Updated `WebPortal` to display a checkbox: "Detect All Deauth (not just protected SSIDs)"
-- Added `shouldDetectDeauth()` method to `DeauthDetector` class
-- Modified packet handler to support both filtered and unfiltered detection modes
+- Modified `discoverChannels()` to monitor all channels when enabled
 
 **Usage**: 
-- When `detect_all_deauth` is `false` (default): Only deauth packets targeting protected SSIDs are detected
-- When `detect_all_deauth` is `true`: All deauth packets are detected regardless of target SSID
+- When `detect_all_deauth` is `false` (default): Only channels with protected SSIDs are monitored
+- When `detect_all_deauth` is `true`: All WiFi channels (1-14) are monitored for deauth packets
+
+**Note**: The setting controls which channels are monitored. Packet-level filtering by SSID cannot be implemented in the callback context because BSSID-to-SSID mapping is not reliably available during packet capture. Future enhancements could add SSID filtering at the display/reporting level if needed.
 
 ### 3. Channel Scan Time Configuration
 **Requirement**: Make the time it takes to perform the scanning loop a setting

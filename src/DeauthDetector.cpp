@@ -76,9 +76,14 @@ void DeauthDetector::discoverChannels() {
     }
     
     if (activeChannels.empty()) {
-        logger.debugPrintln("Warning: No protected SSIDs found. Monitoring all channels.");
-        for (int i = 1; i <= 14; i++) {
-            activeChannels.push_back(i);
+        logger.debugPrintln("Warning: No protected SSIDs found.");
+        if (detectionConfig.detect_all_deauth) {
+            logger.debugPrintln("detect_all_deauth enabled: Monitoring all channels.");
+            for (int i = 1; i <= 14; i++) {
+                activeChannels.push_back(i);
+            }
+        } else {
+            logger.debugPrintln("detect_all_deauth disabled: No channels to monitor.");
         }
     }
     
@@ -132,10 +137,6 @@ void DeauthDetector::updateChannelHop() {
     }
 }
 
-bool DeauthDetector::shouldDetectDeauth() {
-    return detectionConfig.detect_all_deauth || !protectedSSIDs.empty();
-}
-
 void DeauthDetector::packetHandler(void* buf, wifi_promiscuous_pkt_type_t type) {
     if (!detectorInstance || type != WIFI_PKT_MGMT) return;
     
@@ -165,19 +166,19 @@ void DeauthDetector::packetHandler(void* buf, wifi_promiscuous_pkt_type_t type) 
         
         // Count packets by BSSID
         String key = bssidStr;
+        
+        // Check packet threshold before incrementing
+        if (ssidPacketCounts[key] >= detectorInstance->detectionConfig.packet_threshold) {
+            return; // Skip if threshold reached or exceeded
+        }
+        
+        // Increment after threshold check
         ssidPacketCounts[key]++;
         
-        // Check packet threshold
-        if (ssidPacketCounts[key] > detectorInstance->detectionConfig.packet_threshold) {
-            return; // Skip if threshold exceeded
-        }
-        
-        // Check if we should detect this based on config
-        if (!detectorInstance->detectionConfig.detect_all_deauth) {
-            // Only detect if it's a protected SSID (filtering mode)
-            // For now, we'll still record it as we can't easily map BSSID to SSID in the callback
-            // The filtering will be done at reporting/display level
-        }
+        // Note: detect_all_deauth filtering cannot be implemented at packet level
+        // because we cannot reliably map BSSID to SSID in the callback context.
+        // Filtering by protected SSIDs should be implemented at the display/reporting level
+        // if needed in the future.
         
         // Try to match with protected SSIDs
         // Note: We need to do a reverse lookup or track BSSID->SSID mapping
