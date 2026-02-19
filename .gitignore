@@ -5,3 +5,4 @@
 *.bak
 config.txt
 logs/
+DeauthDetector*.bin

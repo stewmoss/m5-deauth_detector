@@ -51,7 +51,8 @@ void setup() {
     M5Cardputer.begin(cfg, true);
     
     Serial.begin(115200);
-    Serial.println("\n\n=== M5 Cardputer Deauth Detector ===");    
+    Serial.println("\n\n=== M5 Cardputer Deauth Detector ===");
+    Serial.println("Firmware v" FIRMWARE_VERSION);    
 
     // Initialize display
     display.begin();
