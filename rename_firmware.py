@@ -9,10 +9,10 @@ version = env.GetProjectOption("custom_fw_version", "dev")
 env.Append(CPPDEFINES=[("FIRMWARE_VERSION", env.StringifyMacro(version))])
 
 def copy_firmware(source, target, env):
-    """Post-build action: copy firmware.bin to DeauthDetector-{version}.bin"""
+    """Post-build action: copy firmware.bin to deauthdetector-{version}.bin"""
     build_dir = env.subst("$BUILD_DIR")
     src = os.path.join(build_dir, "firmware.bin")
-    dest = os.path.join(build_dir, f"..\..\..\DeauthDetector-{version}.bin")
+    dest = os.path.join(build_dir, f"..\..\..\deauthdetector-{version}.bin")
 
     if os.path.isfile(src):
         shutil.copy2(src, dest)
