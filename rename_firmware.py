@@ -9,15 +9,24 @@ version = env.GetProjectOption("custom_fw_version", "dev")
 env.Append(CPPDEFINES=[("FIRMWARE_VERSION", env.StringifyMacro(version))])
 
 def copy_firmware(source, target, env):
-    """Post-build action: copy firmware.bin to deauthdetector-{version}.bin"""
+    
     build_dir = env.subst("$BUILD_DIR")
     src = os.path.join(build_dir, "firmware.bin")
-    dest = os.path.join(build_dir, f"..\..\..\deauthdetector-{version}.bin")
+
+    output_dir = os.path.normpath(os.path.join(build_dir, "..", "..", "..", "output"))
+    print(f"*** Output directory: {output_dir}\n")
+    output_dir_name = output_dir
+    os.makedirs(output_dir, exist_ok=True)
+
+    dest = f"{output_dir_name}\deauthdetector-{version}.bin"
+    print (f"*** Post Build Action: Version={version}\n")
+    print (f"*** Post Build Action: Copy firmware.bin to '{dest}'\n")
+    print(f"*** Output directory: {output_dir_name}\n") 
 
     if os.path.isfile(src):
         shutil.copy2(src, dest)
         print(f"\n*** Output: {dest}\n")
     else:
-        print(f"\n*** copy_firmware: source not found: {src}\n")
+        print(f"\n*** source not found: {src}\n")
 
 env.AddPostAction("$BUILD_DIR/firmware.bin", copy_firmware)
