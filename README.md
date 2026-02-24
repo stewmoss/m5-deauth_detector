@@ -18,6 +18,7 @@ The Deauth Detector transforms your M5Stack Cardputer into a dedicated security 
 - **Web Configuration** — Browser-based setup interface with tabbed configuration
 - **SD Card Logging** — Persistent CSV logging of all detected events
 - **API Reporting** — Batch reporting to external security systems via REST API
+- **Alert Integrations** — Extensible alerting via SMTP email, WhatsApp, Telegram, SMS, ntfy, MQTT and more
 - **NTP Time Sync** — Accurate timestamps for all logged events
 
 ## Hardware Requirements
@@ -50,6 +51,7 @@ Full documentation is available in the [docs](docs/) folder:
 | [Web Interface](docs/web-interface.md) | Web portal usage guide |
 | [Operation Guide](docs/operation.md) | Using the device and display views |
 | [API Integration](docs/api-integration.md) | REST API payload and integration |
+| [Alert Integrations](docs/alert-integrations.md) | SMTP, WhatsApp, Telegram, SMS, MQTT and more |
 | [Troubleshooting](docs/troubleshooting.md) | Common issues and solutions |
 
 ## Project Structure

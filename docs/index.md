@@ -9,7 +9,8 @@ Welcome to the complete documentation for the M5 Cardputer Deauth Detector—a p
 3. [Web Interface Guide](web-interface.md) — Using the browser-based configuration portal
 4. [Operation Guide](operation.md) — Display views, alerts, and daily usage
 5. [API Integration](api-integration.md) — REST API payload format and integration
-6. [Troubleshooting](troubleshooting.md) — Common issues and solutions
+6. [Alert Integrations](alert-integrations.md) — SMTP, WhatsApp, Telegram, SMS, MQTT and more
+7. [Troubleshooting](troubleshooting.md) — Common issues and solutions
 
 ---
 
