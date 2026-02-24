@@ -29,6 +29,7 @@ unsigned long lastReportTime = 0;
 unsigned long lastDisplayUpdate = 0;
 unsigned long goButtonPressTime = 0;
 bool goButtonPressed = false;
+size_t lastEventCount = 0;
 
 // Define the specific pins used by the M5Cardputer for the SD card
 
@@ -50,7 +51,8 @@ void setup() {
     M5Cardputer.begin(cfg, true);
     
     Serial.begin(115200);
-    Serial.println("\n\n=== M5 Cardputer Deauth Detector ===");    
+    Serial.println("\n\n=== M5 Cardputer Deauth Detector ===");
+    Serial.println("Firmware v" FIRMWARE_VERSION);    
 
     // Initialize display
     display.begin();
@@ -256,13 +258,14 @@ void handleMonitorMode() {
     }
     
     // Check for new deauth events
-    if (detector.hasEvents()) {
-        std::vector<DeauthEvent> events = detector.getEvents();
-        
-        // Trigger alert for first event
-        if (alertManager && events.size() == 1) {
+    std::vector<DeauthEvent> events = detector.getEvents();
+    
+    if (!events.empty()) {
+        // Trigger alert whenever new events arrived since last check
+        if (alertManager && events.size() > lastEventCount) {
             alertManager->triggerAlert();
         }
+        lastEventCount = events.size();
         
         // Log events
         for (const DeauthEvent& event : events) {
@@ -274,7 +277,7 @@ void handleMonitorMode() {
     unsigned long currentTime = millis();
     if (currentTime - lastReportTime >= (config.detection.reporting_interval_seconds * 1000)) {
         if (detector.hasEvents()) {
-            std::vector<DeauthEvent> events = detector.getEvents();
+            std::vector<DeauthEvent> reportEvents = detector.getEvents();
             
             // Stop monitoring temporarily
             detector.stopMonitoring();
@@ -283,7 +286,7 @@ void handleMonitorMode() {
             if (wifiManager->connectSTA()) {
                 // Send to API
                 if (apiReporter) {
-                    apiReporter->sendBatch(events);
+                    apiReporter->sendBatch(reportEvents);
                 }
                 
                 // Disconnect
@@ -292,6 +295,7 @@ void handleMonitorMode() {
             
             // Clear events after reporting
             detector.clearEvents();
+            lastEventCount = 0;
             
             // Resume monitoring
             detector.startMonitoring();

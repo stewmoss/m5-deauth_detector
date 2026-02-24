@@ -1,6 +1,10 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#ifndef FIRMWARE_VERSION
+#define FIRMWARE_VERSION "dev"
+#endif
+
 #include <Arduino.h>
 #include <vector>
 
@@ -24,8 +28,6 @@ struct NTPConfig {
 
 struct DetectionConfig {
     std::vector<String> protected_ssids;
-    int silence_gap_seconds;
-    int led_hold_seconds;
     int reporting_interval_seconds;
     int packet_threshold;
     bool detect_all_deauth;

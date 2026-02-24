@@ -4,7 +4,19 @@
 #include <Arduino.h>
 #include <vector>
 #include <map>
+#include <freertos/semphr.h>
 #include "Config.h"
+
+// Lightweight POD captured in ISR context — no heap allocations
+struct RawDeauthCapture {
+    uint8_t addr2[6];   // sender MAC
+    uint8_t addr3[6];   // BSSID
+    int     channel;
+    int     rssi;
+    time_t  timestamp;
+};
+
+static constexpr size_t RAW_RING_SIZE = 64;
 
 struct DeauthEvent {
     time_t timestamp;
@@ -35,12 +47,20 @@ private:
     std::vector<DeauthEvent> events;
     std::vector<int> activeChannels;
     std::map<String, int> ssidChannelMap;
+    std::map<String, String> bssidToSsidMap;  // BSSID -> SSID lookup
     bool monitoring;
     DetectionConfig detectionConfig;
     int currentChannelIndex;
     unsigned long lastChannelHopTime;
-    
+
+    // Thread-safe ring buffer for raw captures from ISR
+    SemaphoreHandle_t mutex;
+    RawDeauthCapture rawRing[RAW_RING_SIZE];
+    volatile size_t rawHead;  // next write position (ISR)
+    volatile size_t rawTail;  // next read position (main loop)
+
     void discoverChannels();
+    void processRawEvents();
     static void packetHandler(void* buf, wifi_promiscuous_pkt_type_t type);
     bool isProtectedSSID(const String& ssid);
 };
